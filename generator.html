@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Textarea Example</title>
+</head>
+<body>
+
+    <label for="inputTextarea">Input Textarea:</label>
+    <textarea id="inputTextarea" rows="4" cols="50"></textarea>
+
+    <br>
+
+    <label for="readOnlyTextarea">Read-Only Textarea:</label>
+    <textarea id="readOnlyTextarea" rows="4" cols="50" readonly></textarea>
+
+    <br>
+
+    <button onclick="executeAction()">Execute</button>
+    <button onclick="copyText()">Copy Text</button>
+    <button onclick="saveToFile()">Save to File</button>
+
+
+    <script>
+        function executeAction() {
+            // Get the value from the input textarea
+            var inputValue = document.getElementById("inputTextarea").value;
+
+            // Perform modifications
+            var modifiedValue = modifyText(inputValue);
+
+            // Set the modified value to the read-only textarea
+            document.getElementById("readOnlyTextarea").value = modifiedValue;
+        }
+
+        function copyText() {
+            // Get the value from the read-only textarea
+            var readOnlyValue = document.getElementById("readOnlyTextarea").value;
+
+            // Copy the text to the clipboard
+            navigator.clipboard.writeText(readOnlyValue).then(function() {
+                alert("Text copied to clipboard!");
+            }).catch(function(err) {
+                console.error('Unable to copy text to clipboard', err);
+            });
+        }
+
+        function modifyText(inputText) {
+            //Delete all ";"
+            var step0 = inputText.replace(/;/g, '.');
+
+            //Delete all "*"
+            var deletedAsteriscos = step0.replace(/\*/g, '');
+
+            //Replace all quotation marks with double quotation marks
+            var formattedQuotationMarks = deletedAsteriscos.replace(/["“”]/g, '""')
+
+            //Add " " before every "\na." or "\na)"
+            var lineBreakToSpaceInAnswers = formattedQuotationMarks.replace(/\n([ABCDEFGabcdefg])[.)]/g, ' $1)')
+
+            var lineBreakToSpaceInQuestions = lineBreakToSpaceInAnswers.replace(/\n(\d+)\./g, ' $1.');
+
+            // 1. Delete all line breaks
+            var step2 = lineBreakToSpaceInQuestions.replace(/\n/g, '');
+
+            // 2. Introduce ; before any number followed by a parenthesis or a dot
+            var step3 = step2.replace(/(\d+\.(?!\d))/g, '";\n\n"$1');
+
+            // Any digit \d
+            // Followed by at least one dot or parenthesis +[.)]
+            // But not continued with other digit (?!\d) (So it doesn't count numbers like 1.000)
+
+            //q(?!u)  //q not followed by u
+
+            // 3. Introduce a line break before any option followed by a "." or a ")"
+            var step4 = step3.replace(/ ([ABCDEFGabcdefg])[.)]/g, '\n$1) ');
+
+            var finalOutput = step4.replace(/^";/, '');
+
+            return finalOutput;
+        }
+
+        function saveToFile() {
+            // Get the value from the read-only textarea
+            var readOnlyValue = document.getElementById("readOnlyTextarea").value;
+
+            // Create a Blob with the text content
+            var blob = new Blob([readOnlyValue], { type: "text/plain" });
+
+            // Create a download link
+            var link = document.createElement("a");
+            link.href = window.URL.createObjectURL(blob);
+            link.download = "output.txt";
+
+            // Trigger a click on the link to initiate the download
+            link.click();
+        }
+    </script>
+
+</body>
+</html>
